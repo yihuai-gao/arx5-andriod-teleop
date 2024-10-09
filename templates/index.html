@@ -168,6 +168,21 @@
 
         // Send data to server
         const data = { timestamp: Date.now() };
+        const pose = frame.getViewerPose(xrRefSpace);
+        data.pose_valid = (pose !== null);
+        if (pose) {
+          data.position = {
+            x: pose.transform.position.x,
+            y: pose.transform.position.y,
+            z: pose.transform.position.z,
+          }
+          data.orientation = {
+            x: pose.transform.orientation.x,
+            y: pose.transform.orientation.y,
+            z: pose.transform.orientation.z,
+            w: pose.transform.orientation.w,
+          }
+        }
         if (touchId !== undefined) {
           const pose = frame.getViewerPose(xrRefSpace);
           if (pose) {
