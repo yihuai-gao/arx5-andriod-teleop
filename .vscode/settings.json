@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
-        "/home/yihuai/robotics/repositories/arx5-sdk/python"
+        "/home/yihuai/robotics/repositories/arx5-sdk/python",
+        "/home/yihuai/Robotics/Repositories/arx5-sdk/python"
     ]
 }
