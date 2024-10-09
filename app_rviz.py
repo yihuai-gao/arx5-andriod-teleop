@@ -44,6 +44,11 @@ socketio = SocketIO(app)
 
 controller = arx5.Arx5CartesianController("L5", "can3", "/home/yihuai/Robotics/Repositories/arx5-sdk/models/arx5.urdf")
 controller.reset_to_home()
+
+WINDOW_SIZE = 5
+prev_eef_commands = np.zeros([WINDOW_SIZE, 6])    
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -90,13 +95,21 @@ def handle_message(data):
         r, p, y = np.mod(transformed_euler + np.pi, 2*np.pi) - np.pi
         r += np.pi/2
         y += np.pi/2
+        p *= -1
 
         pose6d = np.array([position["x"], position["y"], position["z"], r, p, y])
+        
+
+        # perform a sliding window averaging using prev_eef_commands
+        global prev_eef_commands
+        prev_eef_commands = np.vstack([prev_eef_commands[1:], pose6d])
+        avg_eef_command = np.mean(prev_eef_commands, axis=0)
+
         home_pose = controller.get_home_pose()
         timestamp = controller.get_timestamp()
         eef_cmd = arx5.EEFState()
-        eef_cmd.pose_6d()[:] = pose6d + home_pose
-        eef_cmd.timestamp = timestamp + 0.05
+        eef_cmd.pose_6d()[:] = avg_eef_command + home_pose
+        eef_cmd.timestamp = timestamp + 0.02
         if max(eef_cmd.pose_6d()) > 1:
             print("out of range")
         else:
