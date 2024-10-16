@@ -92,7 +92,8 @@ def handle_message(data):
         r, p, y = euler.quat2euler([orientation['w'], orientation['x'], orientation['y'], orientation['z']])
         r -= np.pi/2
         y -= np.pi/2
-        p *= -1
+        r, p = p, r
+        r = -r
         pose_euler = np.array([r, p, y])
         r, p, y = np.mod(pose_euler + np.pi, 2*np.pi) - np.pi
 
@@ -106,12 +107,9 @@ def handle_message(data):
         timestamp = controller.get_timestamp()
         eef_cmd = arx5.EEFState()
         eef_cmd.pose_6d()[:] = avg_eef_command + home_pose
-        eef_cmd.timestamp = timestamp + 0.02 # delay a little bit to improve smootheness
+        eef_cmd.timestamp = timestamp + 0.1 # delay a little bit to improve smootheness
         print(eef_cmd.pose_6d())
-        if max(eef_cmd.pose_6d()) > 1:
-            print("out of range")
-        else:
-            controller.set_eef_cmd(eef_cmd) 
+        controller.set_eef_cmd(eef_cmd) 
             
         publish_pose(position, orientation)
 
